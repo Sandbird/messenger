@@ -53,7 +53,17 @@ class ThreadResource extends JsonResource
      */
     public function toArray($request): array
     {
-        return [
+
+        // Get creator participant using auth()->id()
+        $creator = $this->thread->participants()
+            ->where('owner_id', auth()->id())
+            ->first();
+
+        if ($creator) {
+            $this->thread->setRelation('currentParticipant', $creator);
+        }
+
+        $test = [
             'id' => $this->thread->id,
             'type' => $this->thread->type,
             'type_verbose' => $this->thread->getTypeVerbose(),
@@ -98,8 +108,13 @@ class ThreadResource extends JsonResource
                     fn () => $this->addMessages()
                 ),
                 'latest_message' => $this->addRecentMessage(),
+
+                'participants_count' => $this->getParticipantsCountAttribute(),
             ],
         ];
+        //pr($this->thread,0);
+        //pr($test);
+        return $test;
     }
 
     /**

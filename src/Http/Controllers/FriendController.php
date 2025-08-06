@@ -29,7 +29,8 @@ class FriendController
         $this->authorize('viewAny', Friend::class);
 
         return new FriendCollection(
-            $repository->getProviderFriends(true)
+            //$repository->getProviderFriends(true)
+            $repository->getProviderFriendsCustom()
         );
     }
 

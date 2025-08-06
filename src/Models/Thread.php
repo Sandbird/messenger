@@ -18,6 +18,7 @@ use RTippin\Messenger\Facades\Messenger;
 use RTippin\Messenger\Support\Helpers;
 use RTippin\Messenger\Traits\ScopesProvider;
 use RTippin\Messenger\Traits\Uuids;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @mixin Model|\Eloquent
@@ -427,16 +428,28 @@ class Thread extends Model implements HasPresenceChannel
      */
     public function currentParticipant(): ?Participant
     {
+        /*
+        $provider = Messenger::getProvider();
+        $allParticipants = $this->participants;
+        $filteredParticipants = Helpers::forProviderInCollection($allParticipants, $provider);
+        //pr($provider);
+        pr($allParticipants->first());
+        pr($filteredParticipants);
+        */
         if ($this->currentParticipantCache
             || ! Messenger::isProviderSet()) {
             return $this->currentParticipantCache;
         }
 
+        // Always set provider to current authenticated user
+        if (Auth::check()) {
+            Messenger::setProvider(Auth::user());
+        }
+
+        // Find participant matching current provider
         if ($this->relationLoaded('participants')) {
-            $this->currentParticipantCache = Helpers::forProviderInCollection(
-                $this->participants,
-                Messenger::getProvider()
-            )->first();
+            $this->currentParticipantCache = $this->participants
+                ->firstWhere('owner_id', Messenger::getProvider()->getKey());
         } else {
             $this->currentParticipantCache = $this->participants()
                 ->forProvider(Messenger::getProvider())
@@ -725,4 +738,15 @@ class Thread extends Model implements HasPresenceChannel
     {
         return ThreadFactory::new();
     }
+
+    /**
+     * Get the participants count directly
+     *
+     * @return int
+     */
+    public function getParticipantsCountAttribute(): int
+    {
+        return $this->participants()->count();
+    }
+
 }

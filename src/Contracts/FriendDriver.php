@@ -27,6 +27,8 @@ interface FriendDriver
      */
     public function getProviderFriends(bool $withRelations = false);
 
+    public function getProviderFriendsCustom();
+
     /**
      * @param  bool  $withRelations
      * @return PendingFriend|Collection

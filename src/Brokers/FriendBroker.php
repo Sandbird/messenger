@@ -175,6 +175,58 @@ class FriendBroker implements FriendDriver
      */
     public function getProviderFriendsNotInThread(Thread $thread)
     {
+        /*
+        if (! $this->messenger->providerHasFriends()) {
+            return $this->sendEmptyCollection();
+        }
+         */
+        $participants = $thread->participants()->get();
+
+        return \App\Models\User::whereNotIn('id', $participants->where('owner_type', '=', \App\Models\User::class)->pluck('owner_id'))
+            ->get()
+            ->map(function ($user) {
+                $friend = new Friend;
+                $friend->id = $user->id;
+                $friend->owner_id = auth()->id();
+                $friend->owner_type = \App\Models\User::class;
+                $friend->party_id = $user->id;
+                $friend->party_type = \App\Models\User::class;
+                $friend->created_at = now();
+                $friend->updated_at = now();
+                $friend->setRelation('party', $user);
+                $friend->setRelation('owner', auth()->user());
+
+                return $friend;
+            });
+    }
+
+
+    public function getProviderFriendsCustom()
+    {
+        $test =  \App\Models\User::where('id', '!=', auth()->id())
+            ->get()
+            ->map(function ($user) {
+                $friend = new Friend;
+                $friend->id = $user->id; 
+                $friend->owner_id = auth()->id();
+                $friend->owner_type = \App\Models\User::class;
+                $friend->party_id = $user->id;
+                $friend->party_type = \App\Models\User::class;
+                $friend->created_at = now();
+                $friend->updated_at = now();
+                $friend->setRelation('party', $user);
+                $friend->setRelation('owner', auth()->user());
+
+                return $friend;
+            });
+        //pr($test);
+        return $test;
+    }
+
+
+
+/*     public function getProviderFriendsNotInThread(Thread $thread)
+    {
         if (! $this->messenger->providerHasFriends()) {
             return $this->sendEmptyCollection();
         }
@@ -190,7 +242,7 @@ class FriendBroker implements FriendDriver
             })
             ->load('party');
     }
-
+ */
     /**
      * @return Friend|Builder
      */
