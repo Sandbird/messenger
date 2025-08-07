@@ -96,7 +96,7 @@ class StoreInvite extends InviteAction
 
         try {
             return Carbon::parse($expires);
-        } catch (Throwable) {
+        } catch (\Throwable $exception) {
             return null;
         }
     }
