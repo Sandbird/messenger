@@ -84,10 +84,11 @@ class EndCall extends BaseMessengerAction
     private function acquireLock(): bool
     {
         return Cache::lock(
-            name: "call:{$this->getCall()->id}:ending",
-            seconds: 10
+            "call:{$this->getCall()->id}:ending",
+            10
         )->acquire();
     }
+
 
     /**
      * @return $this
